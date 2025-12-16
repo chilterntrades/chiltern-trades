@@ -153,7 +153,7 @@ export default function Index() {
               <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-4">
                 <StatBox
                   icon={<Users className="h-5 w-5" />}
-                  value="2,400+"
+                  value="500+"
                   label="Trades joined"
                 />
                 <StatBox
