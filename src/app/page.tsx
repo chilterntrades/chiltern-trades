@@ -61,7 +61,7 @@ export default function Index() {
               <img
               src={ASSETS.logo}
               alt="Chiltern Trades"
-              className="h-12 w-auto shrink-0 rounded-xl"
+              className="h-15 w-auto shrink-0 rounded-xl"
               style={{
                 boxShadow: "0 14px 30px -18px rgba(11,18,32,0.22)",
                 }}
