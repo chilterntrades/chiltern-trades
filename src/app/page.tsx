@@ -1,4 +1,5 @@
-// src/pages/Index.tsx
+"use client";
+
 import {
   ShieldCheck,
   Zap,
@@ -14,6 +15,10 @@ import {
   CheckCircle2,
   Mail,
 } from "lucide-react";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
 
 const COLORS = {
   bg: "#F6F3EF",
@@ -37,6 +42,36 @@ const inputClass =
   "w-full rounded-xl px-4 py-3.5 text-sm text-[#0B1220] placeholder:text-[#7A879A] ring-1 ring-[#D8CEC3] bg-white focus:outline-none focus:ring-2 focus:ring-[#C47B3A]/40 transition-all duration-200";
 
 export default function Index() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+
+      // If you want to keep your existing /api/submit route, post to it here:
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Submit failed");
+
+      router.push("/thanks");
+    } catch (err) {
+      // Fallback: stop spinner and let user try again
+      console.error(err);
+      setIsSubmitting(false);
+      alert("Something went wrong submitting your application. Please try again.");
+    }
+  };
+
   return (
     <main
       className="min-h-screen antialiased"
@@ -59,14 +94,13 @@ export default function Index() {
           <header className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
-              src={ASSETS.logo}
-              alt="Chiltern Trades"
-              className="h-15 w-auto shrink-0 rounded-xl"
-              style={{
-                boxShadow: "0 14px 30px -18px rgba(11,18,32,0.22)",
+                src={ASSETS.logo}
+                alt="Chiltern Trades"
+                className="h-12 w-12 shrink-0 rounded-xl object-contain"
+                style={{
+                  boxShadow: "0 14px 30px -18px rgba(11,18,32,0.22)",
                 }}
-                />
-
+              />
 
               <div className="leading-tight">
                 <div className="text-base font-black tracking-tight sm:text-lg">
@@ -81,15 +115,38 @@ export default function Index() {
               </div>
             </div>
 
-            <div className="hidden items-center gap-3 lg:flex">
-              <GlowPill>✨ Sign up free</GlowPill>
-              <GlowPill>🚫 No subscriptions</GlowPill>
-              <GlowPill>💰 Pay per visit only</GlowPill>
-            </div>
+            <nav className="hidden items-center gap-6 md:flex">
+              <Link
+                href="/how-it-works"
+                className="text-sm font-semibold transition-colors hover:opacity-70"
+                style={{ color: COLORS.ink }}
+              >
+                How it works
+              </Link>
+              <Link
+                href="/who-we-are"
+                className="text-sm font-semibold transition-colors hover:opacity-70"
+                style={{ color: COLORS.ink }}
+              >
+                Who we are
+              </Link>
+              <a
+                href="#apply"
+                className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold"
+                style={{
+                  background: `linear-gradient(135deg, ${COLORS.accentHover} 0%, ${COLORS.accent} 60%, #A86830 100%)`,
+                  color: "white",
+                  boxShadow:
+                    "0 14px 28px -14px rgba(196,123,58,0.7), inset 0 1px 0 rgba(255,255,255,0.25)",
+                }}
+              >
+                Apply now
+              </a>
+            </nav>
 
             <a
               href="#apply"
-              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold lg:hidden"
+              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold md:hidden"
               style={{
                 background: `linear-gradient(135deg, ${COLORS.accentHover} 0%, ${COLORS.accent} 60%, #A86830 100%)`,
                 color: "white",
@@ -101,7 +158,25 @@ export default function Index() {
             </a>
           </header>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+          {/* Mobile nav links */}
+          <div className="mt-4 flex items-center gap-4 md:hidden">
+            <Link
+              href="/how-it-works"
+              className="text-sm font-semibold"
+              style={{ color: COLORS.muted }}
+            >
+              How it works
+            </Link>
+            <Link
+              href="/who-we-are"
+              className="text-sm font-semibold"
+              style={{ color: COLORS.muted }}
+            >
+              Who we are
+            </Link>
+          </div>
+
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             <GlowPill>✨ Sign up free</GlowPill>
             <GlowPill>🚫 No subscriptions</GlowPill>
             <GlowPill>💰 Pay per visit only</GlowPill>
@@ -136,7 +211,7 @@ export default function Index() {
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  the UK’s fastest-growing
+                  the UK's fastest-growing
                 </span>{" "}
                 verified trades network
               </h1>
@@ -151,21 +226,9 @@ export default function Index() {
               </p>
 
               <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-4">
-                <StatBox
-                  icon={<Users className="h-5 w-5" />}
-                  value="500+"
-                  label="Trades joined"
-                />
-                <StatBox
-                  icon={<Star className="h-5 w-5" />}
-                  value="98%"
-                  label="Satisfaction"
-                />
-                <StatBox
-                  icon={<TrendingUp className="h-5 w-5" />}
-                  value="£0"
-                  label="To join"
-                />
+                <StatBox icon={<Users className="h-5 w-5" />} value="500+" label="Trades joined" />
+                <StatBox icon={<Star className="h-5 w-5" />} value="98%" label="Satisfaction" />
+                <StatBox icon={<TrendingUp className="h-5 w-5" />} value="£0" label="To join" />
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
@@ -217,131 +280,74 @@ export default function Index() {
                       <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">
                         Apply to join
                       </h2>
-                      <p
-                        className="mt-2 text-sm sm:text-base"
-                        style={{ color: COLORS.muted }}
-                      >
-                        Takes ~2 minutes. We’ll verify and email confirmation.
+                      <p className="mt-2 text-sm sm:text-base" style={{ color: COLORS.muted }}>
+                        Takes ~2 minutes. We'll verify and email confirmation.
                       </p>
                     </div>
                   </div>
 
-                  <form
-                    className="mt-7 grid gap-5"
-                    method="post"
-                    action="/api/submit"
-                  >
+                  <form className="mt-7 grid gap-5" onSubmit={handleSubmit}>
                     <div className="grid gap-5 md:grid-cols-2">
                       <div>
                         <FieldLabel label="Full name" />
-                        <input
-                          name="fullName"
-                          required
-                          placeholder="Your name"
-                          className={inputClass}
-                        />
+                        <input name="fullName" required placeholder="Your name" className={inputClass} />
                       </div>
                       <div>
                         <FieldLabel label="Business name (optional)" />
-                        <input
-                          name="businessName"
-                          placeholder="e.g. Smith Plumbing"
-                          className={inputClass}
-                        />
+                        <input name="businessName" placeholder="e.g. Smith Plumbing" className={inputClass} />
                       </div>
                     </div>
 
                     <div className="grid gap-5 md:grid-cols-2">
                       <div>
                         <FieldLabel label="Phone number" />
-                        <input
-                          name="phone"
-                          required
-                          placeholder="07…"
-                          className={inputClass}
-                          inputMode="tel"
-                        />
+                        <input name="phone" required placeholder="07…" className={inputClass} inputMode="tel" />
                       </div>
                       <div>
                         <FieldLabel label="Email address" />
-                        <input
-                          name="email"
-                          required
-                          placeholder="you@domain.com"
-                          className={inputClass}
-                          inputMode="email"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <div>
-                        <FieldLabel label="Trade type" />
-                        <select
-                          name="trade"
-                          required
-                          className={inputClass}
-                          defaultValue=""
-                        >
-                          <option value="" disabled>
-                            Select your trade…
-                          </option>
-                          <option value="plumber">Plumber</option>
-                          <option value="electrician">Electrician</option>
-                          <option value="handyman">Handyman</option>
-                          <option value="heating_engineer">Heating engineer</option>
-                          <option value="drainage">Drainage</option>
-                          <option value="locksmith">Locksmith</option>
-                          <option value="carpenter">Carpenter</option>
-                          <option value="builder">Builder</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-                      <div>
-                        <FieldLabel label="Business type" />
-                        <select
-                          name="businessType"
-                          required
-                          className={inputClass}
-                          defaultValue=""
-                        >
-                          <option value="" disabled>
-                            Select one…
-                          </option>
-                          <option value="sole_trader">Sole Trader</option>
-                          <option value="limited_company">Limited Company</option>
-                          <option value="partnership">Partnership</option>
-                        </select>
+                        <input name="email" required placeholder="you@domain.com" className={inputClass} inputMode="email" />
                       </div>
                     </div>
 
                     <div>
-                      <FieldLabel label="If 'Other', what trade?" />
-                      <input
-                        name="tradeOther"
-                        placeholder="Optional"
-                        className={inputClass}
-                      />
+                      <FieldLabel label="What type of work do you mainly do?" />
+                      <p className="mb-2 text-sm" style={{ color: COLORS.muted }}>
+                        Select the closest match — you can clarify later.
+                      </p>
+                      <select name="trade" required className={inputClass} defaultValue="">
+                        <option value="" disabled>
+                          Select your trade…
+                        </option>
+                        <option value="plumber">Plumber</option>
+                        <option value="electrician">Electrician</option>
+                        <option value="painter_decorator">Painter & Decorator</option>
+                        <option value="plasterer">Plasterer</option>
+                        <option value="handyman">Handyman</option>
+                        <option value="locksmith">Locksmith</option>
+                        <option value="mixed">Mixed / multiple trades</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <FieldLabel label="Business type" />
+                      <select name="businessType" required className={inputClass} defaultValue="">
+                        <option value="" disabled>
+                          Select one…
+                        </option>
+                        <option value="sole_trader">Sole Trader</option>
+                        <option value="limited_company">Limited Company</option>
+                        <option value="partnership">Partnership</option>
+                      </select>
                     </div>
 
                     <div className="grid gap-5 md:grid-cols-2">
                       <div>
                         <FieldLabel label="Base postcode" />
-                        <input
-                          name="postcode"
-                          required
-                          placeholder="e.g. HP5"
-                          className={inputClass}
-                        />
+                        <input name="postcode" required placeholder="e.g. HP5" className={inputClass} />
                       </div>
                       <div>
                         <FieldLabel label="Service radius" />
-                        <select
-                          name="radiusMiles"
-                          required
-                          className={inputClass}
-                          defaultValue=""
-                        >
+                        <select name="radiusMiles" required className={inputClass} defaultValue="">
                           <option value="" disabled>
                             Select radius…
                           </option>
@@ -358,12 +364,7 @@ export default function Index() {
                     <div className="grid gap-5 md:grid-cols-2">
                       <div>
                         <FieldLabel label="Years of experience" />
-                        <select
-                          name="yearsExperience"
-                          required
-                          className={inputClass}
-                          defaultValue=""
-                        >
+                        <select name="yearsExperience" required className={inputClass} defaultValue="">
                           <option value="" disabled>
                             Select range…
                           </option>
@@ -376,12 +377,7 @@ export default function Index() {
                       </div>
                       <div>
                         <FieldLabel label="Preferred contact method" />
-                        <select
-                          name="preferredContact"
-                          required
-                          className={inputClass}
-                          defaultValue=""
-                        >
+                        <select name="preferredContact" required className={inputClass} defaultValue="">
                           <option value="" disabled>
                             Select…
                           </option>
@@ -400,20 +396,11 @@ export default function Index() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <LinkIcon
-                              className="h-5 w-5"
-                              style={{ color: COLORS.accent }}
-                            />
-                            <h3 className="text-base font-bold">
-                              Verification links
-                            </h3>
+                            <ShieldCheck className="h-5 w-5" style={{ color: COLORS.accent }} />
+                            <h3 className="text-base font-bold">Proof you're a real trade (one required)</h3>
                           </div>
-                          <p
-                            className="mt-1 text-sm"
-                            style={{ color: COLORS.muted }}
-                          >
-                            At least <strong>one link</strong> required for fast
-                            verification
+                          <p className="mt-1 text-sm" style={{ color: COLORS.muted }}>
+                            Just enough for us to verify you — we'll follow up if needed.
                           </p>
                         </div>
                         <span
@@ -427,41 +414,62 @@ export default function Index() {
                         </span>
                       </div>
 
-                      <div className="mt-4 grid gap-3">
-                        <input
-                          name="facebook"
-                          placeholder="Facebook page URL"
-                          className={inputClass}
-                        />
-                        <input
-                          name="instagram"
-                          placeholder="Instagram profile URL"
-                          className={inputClass}
-                        />
-                        <input
-                          name="googleBusiness"
-                          placeholder="Google Business Profile URL"
-                          className={inputClass}
-                        />
-                        <input
-                          name="website"
-                          placeholder="Website URL"
-                          className={inputClass}
-                        />
-                        <input
-                          name="platformProfiles"
-                          placeholder="Checkatrade / MyBuilder / etc URL"
-                          className={inputClass}
-                        />
-                      </div>
+                      <div className="mt-4 grid gap-4">
+                        <div>
+                          <label className="mb-1.5 block text-sm font-semibold" style={{ color: COLORS.ink }}>
+                            Business name, profile name, or link *
+                          </label>
+                          <input
+                            name="verificationProof"
+                            required
+                            placeholder="e.g. Smith Plumbing, @smithplumbing, or a link"
+                            className={inputClass}
+                          />
+                          <p className="mt-1.5 text-xs" style={{ color: COLORS.muted }}>
+                            This helps us find you online. Can be a business name, social handle, or partial link.
+                          </p>
+                        </div>
 
-                      <p
-                        className="mt-4 flex items-center gap-2 text-xs"
-                        style={{ color: COLORS.muted }}
-                      >
-                        <Star className="h-4 w-4" style={{ color: COLORS.accent }} />
-                        Pro tip: Google Business Profile = fastest verification
-                      </p>
+                        <div className="border-t pt-4" style={{ borderColor: COLORS.border }}>
+                          <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: COLORS.muted }}>
+                            Optional — add more if you have them
+                          </p>
+                          <div className="grid gap-3">
+                            <div>
+                              <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
+                                Google Business name (optional)
+                              </label>
+                              <input
+                                name="googleBusinessName"
+                                placeholder="e.g. Smith Plumbing Chesham"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
+                                Instagram handle (optional)
+                              </label>
+                              <input name="instagramHandle" placeholder="e.g. @smithplumbing" className={inputClass} />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
+                                Website (optional)
+                              </label>
+                              <input name="website" placeholder="e.g. https://smithplumbing.co.uk" className={inputClass} />
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
+                                Platform profile (optional)
+                              </label>
+                              <input
+                                name="platformProfile"
+                                placeholder="e.g. Checkatrade, MyBuilder, Rated People"
+                                className={inputClass}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div
@@ -479,20 +487,37 @@ export default function Index() {
                           required
                           className="mt-1 h-5 w-5 rounded accent-[#C47B3A]"
                         />
-                        <label
-                          htmlFor="agree"
-                          className="text-sm leading-relaxed"
-                          style={{ color: COLORS.muted }}
-                        >
-                          I consent to onboarding updates and understand sign-up is{" "}
-                          <strong>free</strong>, and I only pay when I confirm a visit.
+                        <label htmlFor="agree" className="text-sm leading-relaxed" style={{ color: COLORS.muted }}>
+                          I consent to onboarding updates and understand sign-up is <strong>free</strong>, and I only pay
+                          when I confirm a visit.
                         </label>
+                      </div>
+                    </div>
+
+                    {/* What happens next */}
+                    <div
+                      className="rounded-2xl p-5"
+                      style={{
+                        backgroundColor: "rgba(196,123,58,0.06)",
+                        border: `1px solid ${COLORS.border}`,
+                      }}
+                    >
+                      <h4 className="flex items-center gap-2 text-sm font-bold" style={{ color: COLORS.ink }}>
+                        <Zap className="h-4 w-4" style={{ color: COLORS.accent }} />
+                        What happens next
+                      </h4>
+                      <div className="mt-3 grid gap-2">
+                        <WhatNextStep number="1" text="Apply — you're doing this now" />
+                        <WhatNextStep number="2" text="We verify your details (usually 24–48hrs)" />
+                        <WhatNextStep number="3" text="Stripe pre-auth when jobs appear in your area" />
+                        <WhatNextStep number="4" text="Pay only when you confirm a visit" />
                       </div>
                     </div>
 
                     <button
                       type="submit"
-                      className="group relative mt-1 w-full overflow-hidden rounded-2xl px-7 py-5 text-base font-black tracking-wide sm:text-lg"
+                      disabled={isSubmitting}
+                      className="group relative mt-1 w-full overflow-hidden rounded-2xl px-7 py-5 text-base font-black tracking-wide sm:text-lg disabled:opacity-70"
                       style={{
                         background:
                           "linear-gradient(135deg, #D08A4F 0%, #C47B3A 55%, #A86830 100%)",
@@ -502,7 +527,7 @@ export default function Index() {
                       }}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-3">
-                        Submit Application
+                        {isSubmitting ? "Submitting..." : "Submit Application"}
                         <ArrowRight className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
                     </button>
@@ -532,24 +557,9 @@ export default function Index() {
                   </div>
 
                   <div className="mt-7 space-y-6">
-                    <StepDark
-                      n="1"
-                      icon={<BadgeCheck className="h-5 w-5" />}
-                      title="Apply (free)"
-                      body="Share your trade, area & one verification link."
-                    />
-                    <StepDark
-                      n="2"
-                      icon={<ShieldCheck className="h-5 w-5" />}
-                      title="Get verified"
-                      body="We review & send confirmation by email."
-                    />
-                    <StepDark
-                      n="3"
-                      icon={<Zap className="h-5 w-5" />}
-                      title="Receive requests"
-                      body="Accept what fits. You stay in complete control."
-                    />
+                    <StepDark n="1" icon={<BadgeCheck className="h-5 w-5" />} title="Apply (free)" body="Share your trade, area & one verification link." />
+                    <StepDark n="2" icon={<ShieldCheck className="h-5 w-5" />} title="Get verified" body="We review & send confirmation by email." />
+                    <StepDark n="3" icon={<Zap className="h-5 w-5" />} title="Receive requests" body="Accept what fits. You stay in complete control." />
                   </div>
                 </div>
               </div>
@@ -568,10 +578,7 @@ export default function Index() {
                     <PoundSterling className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <div
-                      className="text-sm font-semibold uppercase tracking-wide"
-                      style={{ color: COLORS.muted }}
-                    >
+                    <div className="text-sm font-semibold uppercase tracking-wide" style={{ color: COLORS.muted }}>
                       Pricing
                     </div>
                     <div className="text-2xl font-black">Transparent & Fair</div>
@@ -594,13 +601,9 @@ export default function Index() {
                   </PriceRow>
 
                   <div className="flex items-start gap-3 rounded-xl bg-white/60 p-4">
-                    <CreditCard
-                      className="mt-0.5 h-5 w-5 flex-shrink-0"
-                      style={{ color: COLORS.accent }}
-                    />
+                    <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0" style={{ color: COLORS.accent }} />
                     <span className="text-sm" style={{ color: COLORS.muted }}>
-                      <strong>Stripe pre-authorisation</strong> — clean, secure,
-                      auditable payments.
+                      <strong>Stripe pre-authorisation</strong> — clean, secure, auditable payments.
                     </span>
                   </div>
                 </div>
@@ -614,11 +617,7 @@ export default function Index() {
                 }}
               >
                 <div className="mx-auto max-w-[320px]">
-                  <img
-                    src={ASSETS.ukNetwork}
-                    alt="UK Network Coverage"
-                    className="mx-auto h-44 w-auto sm:h-48"
-                  />
+                  <img src={ASSETS.ukNetwork} alt="UK Network Coverage" className="mx-auto h-44 w-auto sm:h-48" />
                 </div>
                 <div className="mt-4 text-lg font-bold">Nationwide coverage</div>
                 <p className="mt-1 text-sm" style={{ color: COLORS.muted }}>
@@ -630,11 +629,8 @@ export default function Index() {
         </div>
       </section>
 
-      {/* FOOTER (added email) */}
-      <footer
-        className="border-t py-8"
-        style={{ borderColor: COLORS.border, color: COLORS.muted }}
-      >
+      {/* FOOTER */}
+      <footer className="border-t py-8" style={{ borderColor: COLORS.border, color: COLORS.muted }}>
         <div className="mx-auto max-w-7xl px-5 text-center sm:px-6">
           <div className="text-sm">
             © {new Date().getFullYear()} Chiltern Trades. All rights reserved. · Premium Trade Network
@@ -661,10 +657,7 @@ function HeroCard() {
   return (
     <div className="relative">
       <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-[#C47B3A]/18 to-[#0B1220]/10 blur-3xl" />
-      <div
-        className="relative overflow-hidden rounded-3xl shadow-2xl"
-        style={{ border: `4px solid ${COLORS.paper}` }}
-      >
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{ border: `4px solid ${COLORS.paper}` }}>
         <img
           src={ASSETS.hero}
           alt="Professional tradesperson"
@@ -709,15 +702,7 @@ function GlowPill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatBox({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-}) {
+function StatBox({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
     <div
       className="rounded-2xl p-3 text-center sm:p-4"
@@ -746,13 +731,7 @@ function StatBox({
   );
 }
 
-function TrustBadge({
-  icon,
-  children,
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function TrustBadge({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div
       className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm"
@@ -767,17 +746,7 @@ function TrustBadge({
   );
 }
 
-function StepDark({
-  n,
-  icon,
-  title,
-  body,
-}: {
-  n: string;
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function StepDark({ n, icon, title, body }: { n: string; icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="flex items-start gap-4">
       <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-white/10 text-lg font-black text-white">
@@ -794,13 +763,7 @@ function StepDark({
   );
 }
 
-function PriceRow({
-  children,
-  highlight = false,
-}: {
-  children: React.ReactNode;
-  highlight?: boolean;
-}) {
+function PriceRow({ children, highlight = false }: { children: React.ReactNode; highlight?: boolean }) {
   return (
     <div className={`flex items-center ${highlight ? "text-base sm:text-lg" : "text-sm"}`}>
       <CheckCircle2 className="mr-2 h-5 w-5 flex-shrink-0" style={{ color: COLORS.accent }} />
@@ -814,5 +777,19 @@ function FieldLabel({ label }: { label: string }) {
     <label className="mb-2 block text-sm font-bold" style={{ color: COLORS.ink }}>
       {label}
     </label>
+  );
+}
+
+function WhatNextStep({ number, text }: { number: string; text: string }) {
+  return (
+    <div className="flex items-center gap-3 text-sm" style={{ color: COLORS.muted }}>
+      <span
+        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+        style={{ backgroundColor: COLORS.accent, color: "white" }}
+      >
+        {number}
+      </span>
+      {text}
+    </div>
   );
 }
