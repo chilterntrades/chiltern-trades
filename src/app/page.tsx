@@ -449,7 +449,7 @@ export default function Index() {
                               <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
                                 Instagram handle (optional)
                               </label>
-                              <input name="instagramHandle" placeholder="e.g. @smithplumbing" className={inputClass} />
+                              <input name="instagram" placeholder="e.g. @smithplumbing" className={inputClass} />
                             </div>
                             <div>
                               <label className="mb-1 block text-xs font-medium" style={{ color: COLORS.muted }}>
